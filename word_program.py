@@ -1,20 +1,164 @@
+try:
+    import wx
+except ImportError:
+    raise ImportError,"The wxPython module is required to run this program."
+
+playername="Anon"
+class getName(wx.App):
+    def OnInit(self):
+        # Args below are: parent, question, dialog title, default answer
+        dlg=wx.TextEntryDialog(None,'What is your name ?','Vocabulate Master', '<name>')
+
+        # This function returns the button pressed to close the dialog
+        ret = dlg.ShowModal()
+        if ret == wx.ID_OK:
+            print('Welcome %s\n' % dlg.GetValue())
+            playername=dlg.GetValue()
+        else:
+            print('Welcome to Vocabulate-Master\n' % dlg.GetValue())
+            print('You chose to remain Anonymous')
+        dlg.Destroy()
+        return True
+
+class mainPanel(wx.Panel):
+    def __init__(self, parent):
+        """Constructor"""
+        wx.Panel.__init__(self, parent=parent)
+        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        self.frame = parent
+
+        #-----------------
+        
+        # Pick an image file you have in the working folder
+        # You can load .jpg  .png  .bmp  or .gif files
+        image_file = "bg.jpg"
+        self.bmp = wx.Image(image_file, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+
+        # Image's upper left corner anchors at panel coordinates (0, 0)
+        self.bitmap1 = wx.StaticBitmap(self, -1, self.bmp, (0, 0))
+        self.Bind(wx.EVT_SIZE, self.OnResize)
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
+                
+        dc = wx.ClientDC(self)
+        dc.DrawBitmap(self.bmp, 0,0, True)
+
+        # Simplified init method
+        self.CreateButtons()
+        self.DoLayout()
+
+        
+    def CreateButtons(self):
+        # Button goes on the image --> self.bitmap1 is the parent
+        self.btn1 = wx.Button(self.bitmap1, id=-1, label='New Game')
+        self.btn2 = wx.Button(self.bitmap1, id=-1, label="High Scores")
+        self.btn3 = wx.Button(self.bitmap1, id=-1, label="Options")
+        self.btn4 = wx.Button(self.bitmap1, id=-1, label="Quit")
+        #bind buttons to functions here 
+        self.Bind(wx.EVT_BUTTON, self.OnNewGame, self.btn1)
+        self.Bind(wx.EVT_BUTTON, self.OnQuit, self.btn4)
+
+        self.btn1.SetFocus()
+    
+    def OnQuit(self, e):
+        self.frame.Close()
+    def OnNewGame(self, e):
+        #code for initiating new game
+        wx.MessageBox('Under Construction !', 'New Game',wx.OK | wx.ICON_INFORMATION)
+    
+    def OnResize(self, event):
+        self.btn1.Refresh(), self.btn2.Refresh(),
+        self.btn3.Refresh(), self.btn4.Refresh()
+        event.Skip()
+
+    def OnEraseBackground(self, event):
+        dc = event.GetDC()
+        if not dc:
+            dc = wx.ClientDC(self)
+            rect = self.GetUpdateRegion().GetBox()
+            dc.SetClippingRect(rect)
+
+    def Draw(self, dc):
+        dc.DrawBitmap(self.bmp, 0, 0, True)
+
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self)
+        self.Draw(dc)
+
+    def DoLayout(self):     
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.btn1, 0, wx.ALL, 5)
+        sizer.Add(self.btn2, 0, wx.ALL, 5)
+        sizer.Add(self.btn3, 0, wx.ALL, 5)
+        sizer.Add(self.btn4, 0, wx.ALL, 5)
+        
+        hSizer = wx.BoxSizer(wx.HORIZONTAL)
+        hSizer.Add((1,1), 1, wx.EXPAND)
+        hSizer.Add(sizer, 0, wx.TOP, 50)
+        hSizer.Add((1,1), 0, wx.ALL, 75)
+        self.SetSizer(hSizer)
+
+class mainFrame(wx.Frame):
+
+    def __init__(self, parent, ID, title):
+        wx.Frame.__init__(self, parent, ID, title, size=(500, 333),style=wx.MAXIMIZE_BOX | wx.RESIZE_BORDER 
+    | wx.SYSTEM_MENU | wx.CAPTION |  wx.CLOSE_BOX)
+        panel = mainPanel(self)            
+        self.SetMaxSize((1024, 768))
+        self.Center()
+
+        #menu related code
+        menubar = wx.MenuBar()
+
+        fileMenu = wx.Menu()
+        helpMenu = wx.Menu()
+        
+        fileNewGame = fileMenu.Append(-1, 'New Game', 'New Game')
+        fileHighScores = fileMenu.Append(-1, 'High Scores', 'View Highscores')
+        fileQuit = fileMenu.Append(wx.ID_EXIT, 'Quit', 'Quit application')
+        
+        menubar.Append(fileMenu, '&File')
+        
+        helpInstr=helpMenu.Append(-1, 'Instructions', 'Game Play Information')
+        menubar.Append(helpMenu, '&Help')
+       
+        self.SetMenuBar(menubar)
+
+        self.Bind(wx.EVT_MENU, self.OnQuit, fileQuit)
+        self.Bind(wx.EVT_MENU, self.OnInstr, helpInstr)
+        self.Bind(wx.EVT_MENU, self.OnNewGame, fileNewGame)
+        self.Bind(wx.EVT_MENU, self.OnHighScore, fileHighScores)
+
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self)
+        dc.DrawBitmap(self.bitmap, 0,0)
+
+    def OnQuit(self, e):
+        self.Close()
+    def OnInstr(self, e):
+        #code for Game Instructions 
+        wx.MessageBox('Under Construction !', 'Instructions',wx.OK | wx.ICON_INFORMATION)
+
+    def OnNewGame(self, e):
+        #code for initiating new game
+        wx.MessageBox('Under Construction !', 'New Game',wx.OK | wx.ICON_INFORMATION)
+    def OnHighScore(self, e):
+        #code for viewing high scores
+        wx.MessageBox('Under Construction !', 'High Scores',wx.OK | wx.ICON_INFORMATION)
+    
+
+app=getName(redirect=0)
+frame = mainFrame(None, -1, 'Vocabulator v1.0')
+frame.Show()
+app.MainLoop()
+
+
+#---------------------untouched original CUI code--------------------------
 ## Add sentence usage
 ## Add synonyms
 ## Add choice of vocab list
 ## Add type of word (noun/adj/etc.)
-
 import random
-
-"""
-names = open('names.txt', 'r')
-definitions = open('defs.txt', 'r')
-db = {}
-for word in names:
-    db[word] = definitions.readline()
-
-names.close()
-definitions.close()
-"""
 
 db = {}
 vocab = open('vocab.txt', 'r')
